@@ -70,15 +70,15 @@ func (p Project) Duration() time.Duration {
 }
 
 type TaskProgress struct {
-	taskId        uuid.UUID
-	taskIndex     int
-	name          string
-	restDuration  time.Duration
-	totalDuration time.Duration
+	taskId          uuid.UUID
+	taskIndex       int
+	name            string
+	elapsedDuration time.Duration
+	totalDuration   time.Duration
 }
 
-func NewTaskProgress(taskId uuid.UUID, taskIndex int, name string, restDuration time.Duration, totalDuration time.Duration) TaskProgress {
-	return TaskProgress{taskId: taskId, taskIndex: taskIndex, name: name, restDuration: restDuration, totalDuration: totalDuration}
+func NewTaskProgress(taskId uuid.UUID, taskIndex int, name string, elapsedDuration time.Duration, totalDuration time.Duration) TaskProgress {
+	return TaskProgress{taskId: taskId, taskIndex: taskIndex, name: name, elapsedDuration: elapsedDuration, totalDuration: totalDuration}
 }
 
 func (tp TaskProgress) TaskId() uuid.UUID {
@@ -93,8 +93,8 @@ func (tp TaskProgress) TaskIndex() int {
 	return tp.taskIndex
 }
 
-func (tp TaskProgress) RestDuration() time.Duration {
-	return tp.restDuration
+func (tp TaskProgress) ElapsedDuration() time.Duration {
+	return tp.elapsedDuration
 }
 
 func (tp TaskProgress) TotalDuration() time.Duration {
@@ -105,24 +105,40 @@ func (tp TaskProgress) ProgressRatio() float64 {
 	if tp.totalDuration == 0 {
 		return 0
 	}
-	if tp.restDuration == 0 {
-		return 1
+	if tp.elapsedDuration == 0 {
+		return 0
 	}
 
-	return 1.0 - float64(tp.restDuration)/float64(tp.totalDuration)
+	return float64(tp.elapsedDuration) / float64(tp.totalDuration)
 }
 
 func (p Project) Progress(elapsedDuration time.Duration) *TaskProgress {
 	// Find active task
 	var activeTask *Task
 	var activeTaskIndex int
-	var totalDuration time.Duration
-	for i, task := range p.tasks {
-		totalDuration += task.Duration()
-		if elapsedDuration <= totalDuration {
-			activeTask = &task
-			activeTaskIndex = i
-			break
+	var restElapsedDuration time.Duration = elapsedDuration
+	if p.repeat {
+		for {
+			for i, task := range p.tasks {
+				if restElapsedDuration < task.Duration() {
+					activeTask = &task
+					activeTaskIndex = i
+					break
+				}
+				restElapsedDuration -= task.Duration()
+			}
+			if activeTask != nil {
+				break
+			}
+		}
+	} else {
+		for i, task := range p.tasks {
+			if restElapsedDuration < task.Duration() {
+				activeTask = &task
+				activeTaskIndex = i
+				break
+			}
+			restElapsedDuration -= task.Duration()
 		}
 	}
 
@@ -130,8 +146,7 @@ func (p Project) Progress(elapsedDuration time.Duration) *TaskProgress {
 		return nil
 	}
 
-	restDuration := totalDuration - elapsedDuration
-	activeTaskProgress := NewTaskProgress(activeTask.ID(), activeTaskIndex, activeTask.Name(), restDuration, activeTask.Duration())
+	activeTaskProgress := NewTaskProgress(activeTask.ID(), activeTaskIndex, activeTask.Name(), restElapsedDuration, activeTask.Duration())
 
 	return &activeTaskProgress
 }

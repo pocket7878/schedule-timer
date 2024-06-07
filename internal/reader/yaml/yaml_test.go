@@ -69,4 +69,9 @@ tasks:
 	if project.Repeat() != true {
 		t.Errorf("Expected true, got %v", project.Repeat())
 	}
+
+	tasks := project.Tasks()
+	if len(tasks) != 1 {
+		t.Fatalf("Expected 1 task, got %v", len(tasks))
+	}
 }
