@@ -92,7 +92,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (m model) View() string {
 	taskProgress := m.latestTaskProgress
 	if taskProgress == nil {
-		return ""
+		return "Done"
 	}
 
 	screen := ""
@@ -103,7 +103,8 @@ func (m model) View() string {
 	screen += m.progress.ViewAs(1.0-progressRatio) + "\n"
 	screen += m.progress.ViewAs(1.0-progressRatio) + "\n"
 	screen += m.progress.ViewAs(1.0-progressRatio) + "\n"
-	screen += taskProgress.RestDuration().String() + " / " + taskProgress.TotalDuration().String() + "\n"
+	restDuration := taskProgress.TotalDuration() - taskProgress.ElapsedDuration()
+	screen += restDuration.String() + " / " + taskProgress.TotalDuration().String() + "\n"
 	screen += strings.Repeat("-", m.screenWidth) + "\n"
 	screen += m.taskTable.View() + "\n"
 

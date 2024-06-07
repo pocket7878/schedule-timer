@@ -13,13 +13,19 @@ type taskYAML struct {
 }
 
 type projectYAML struct {
-	Name  string
-	Tasks []taskYAML
+	Name   string
+	Repeat bool
+	Tasks  []taskYAML
 }
 
 // Reader is an interface for reading a project from a file.
 func Read(data []byte) (*model.Project, error) {
-	var projectYAML projectYAML
+	// set defaults
+	projectYAML := projectYAML{
+		Name:   "",
+		Repeat: false,
+		Tasks:  []taskYAML{},
+	}
 	err := yaml.Unmarshal(data, &projectYAML)
 
 	if err != nil {
@@ -31,6 +37,6 @@ func Read(data []byte) (*model.Project, error) {
 		tasks[i] = model.NewTask(task.Name, time.Second*time.Duration(task.DurationInSeconds))
 	}
 
-	project := model.NewProject(projectYAML.Name, tasks)
+	project := model.NewProject(projectYAML.Name, tasks, projectYAML.Repeat)
 	return &project, nil
 }
