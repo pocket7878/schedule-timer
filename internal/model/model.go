@@ -30,14 +30,15 @@ func (t Task) Duration() time.Duration {
 }
 
 type Project struct {
-	id    uuid.UUID
-	name  string
-	tasks []Task
+	id     uuid.UUID
+	name   string
+	tasks  []Task
+	repeat bool
 }
 
-func NewProject(name string, tasks []Task) Project {
+func NewProject(name string, tasks []Task, repeat bool) Project {
 	projectId := uuid.New()
-	return Project{id: projectId, name: name, tasks: tasks}
+	return Project{id: projectId, name: name, tasks: tasks, repeat: repeat}
 }
 
 func (p Project) ID() uuid.UUID {
@@ -46,6 +47,10 @@ func (p Project) ID() uuid.UUID {
 
 func (p Project) Name() string {
 	return p.name
+}
+
+func (p Project) Repeat() bool {
+	return p.repeat
 }
 
 func (p Project) Tasks() []Task {

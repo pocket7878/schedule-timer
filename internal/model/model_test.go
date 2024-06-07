@@ -8,7 +8,7 @@ import (
 )
 
 func TestAddTask(t *testing.T) {
-	project := NewProject("test project", []Task{})
+	project := NewProject("test project", []Task{}, false)
 	task := NewTask("test task", time.Second*10)
 
 	project.AddTask(task)
@@ -18,7 +18,7 @@ func TestAddTask(t *testing.T) {
 }
 
 func TestNewProject(t *testing.T) {
-	project := NewProject("test project", []Task{})
+	project := NewProject("test project", []Task{}, false)
 	if project.Name() != "test project" {
 		t.Errorf("Expected test project, got %v", project.Name())
 	}
@@ -27,7 +27,7 @@ func TestNewProject(t *testing.T) {
 func TestProjectDuration(t *testing.T) {
 	firstTask := NewTask("first task", time.Second*10)
 	secondTask := NewTask("second task", time.Second*20)
-	project := NewProject("test project", []Task{firstTask, secondTask})
+	project := NewProject("test project", []Task{firstTask, secondTask}, false)
 
 	if project.Duration() != firstTask.Duration()+secondTask.Duration() {
 		t.Errorf("Expected %v, got %v", firstTask.Duration()+secondTask.Duration(), project.Duration())
@@ -65,7 +65,7 @@ func TestTaskProgressRatioAtFull(t *testing.T) {
 func TestProgressReturnsFirstTaskOnZero(t *testing.T) {
 	firstTask := NewTask("first task", time.Second*10)
 	secondTask := NewTask("second task", time.Second*10)
-	project := NewProject("test project", []Task{firstTask, secondTask})
+	project := NewProject("test project", []Task{firstTask, secondTask}, false)
 
 	progress := project.Progress(time.Second * 0)
 	if progress.TaskId() != firstTask.ID() {
@@ -76,7 +76,7 @@ func TestProgressReturnsFirstTaskOnZero(t *testing.T) {
 func TestProgressReturnsFirstTaskOnFirstTaskEnd(t *testing.T) {
 	firstTask := NewTask("first task", time.Second*10)
 	secondTask := NewTask("second task", time.Second*10)
-	project := NewProject("test project", []Task{firstTask, secondTask})
+	project := NewProject("test project", []Task{firstTask, secondTask}, false)
 
 	progress := project.Progress(firstTask.Duration())
 	if progress.TaskId() != firstTask.ID() {
@@ -87,7 +87,7 @@ func TestProgressReturnsFirstTaskOnFirstTaskEnd(t *testing.T) {
 func TestProgressReturnsSecondTaskOnFirstTaskEndPlusOne(t *testing.T) {
 	firstTask := NewTask("first task", time.Second*10)
 	secondTask := NewTask("second task", time.Second*10)
-	project := NewProject("test project", []Task{firstTask, secondTask})
+	project := NewProject("test project", []Task{firstTask, secondTask}, false)
 
 	progress := project.Progress(firstTask.Duration() + time.Second)
 	if progress.TaskId() != secondTask.ID() {
@@ -98,7 +98,7 @@ func TestProgressReturnsSecondTaskOnFirstTaskEndPlusOne(t *testing.T) {
 func TestProgressReturnsSecondTaskOnFirstTaskEndPlusDuration(t *testing.T) {
 	firstTask := NewTask("first task", time.Second*10)
 	secondTask := NewTask("second task", time.Second*10)
-	project := NewProject("test project", []Task{firstTask, secondTask})
+	project := NewProject("test project", []Task{firstTask, secondTask}, false)
 
 	progress := project.Progress(firstTask.Duration() + secondTask.Duration())
 	if progress.TaskId() != secondTask.ID() {
@@ -109,7 +109,7 @@ func TestProgressReturnsSecondTaskOnFirstTaskEndPlusDuration(t *testing.T) {
 func TestProgressReturnsNilOnFirstTaskEndPlusDurationPlusOne(t *testing.T) {
 	firstTask := NewTask("first task", time.Second*10)
 	secondTask := NewTask("second task", time.Second*10)
-	project := NewProject("test project", []Task{firstTask, secondTask})
+	project := NewProject("test project", []Task{firstTask, secondTask}, false)
 
 	progress := project.Progress(firstTask.Duration() + secondTask.Duration() + time.Second)
 	if progress != nil {
